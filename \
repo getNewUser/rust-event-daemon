@@ -1,0 +1,12 @@
+use std::thread;
+use std::sync::mpsc::channel;
+mod events;
+use crate::events::EventType;
+fn main() {
+    let (sender receiver) = channel();
+    thread::spawn(move || {
+        sender.send(EventType::VolumeUp).unwrap();
+    
+    }
+
+}

@@ -1,0 +1,8 @@
+~/.config/rust-solutions/event_daemon/..
+  .git
+  ★ src
+   ★ .gitignore
+   ★ \
+   ★ Cargo.lock
+   ★ Cargo.toml
+   ★ NvimTree_1
