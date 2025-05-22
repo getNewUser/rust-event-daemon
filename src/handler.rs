@@ -1,34 +1,52 @@
 use std::io::Error;
 use std::process::Command;
 use std::process::Output;
-
 use crate::events::EventType;
+use crate::fifo_helper;
+use crate::fifo_helper::FifoFile;
+
 
 pub fn handle_event(event: EventType) {
+    eprintln!("🔔 Handling event: {:?}", event);
+
     let result = match event {
         EventType::VolumeUp => adjust_volume("+5%", || fallback_amixer("+5%")),
         EventType::VolumeDown => adjust_volume("-5%", || fallback_amixer("-5%")), 
         EventType::MuteToggle => toggle_mute(toggle_mute_amixer_fallback),
     };
 
-    println!("{}", result);
+    eprintln!("📤 Final output: {}", result);
+    fifo_helper::write(&result, FifoFile::VolumeStatus);
+    eprintln!("✅ Wrote status to FIFO");
 }
 
 fn adjust_volume(volume: &str, fallback: impl FnOnce()) -> String {
+    eprintln!("🔧 Adjusting volume by {}", volume);
+
     let result = Command::new("pactl")
         .args(["set-sink-volume", "@DEFAULT_SINK@", volume])
         .output();
 
     handle_output("pactl", &result, fallback);
 
-    get_current_volume().unwrap_or("NA".to_string())
+    let volume = get_current_volume().unwrap_or("NA".to_string());
+    eprintln!("🔊 Volume after adjustment: {}", volume);
+    volume 
 }
 
 fn get_current_volume() -> Option<String> {
     if let Some(volume) = get_volume_from_pactl() {
+        eprintln!("ℹ️ Volume from pactl: {}", volume);
         Some(volume)
     } else {
-        get_volume_from_amixer()
+        eprintln!("⚠️ pactl failed, falling back to amixer...");
+        let fallback_result = get_volume_from_amixer();
+        if let Some(vol) = &fallback_result {
+            eprintln!("ℹ️ Volume from amixer: {}", vol);
+        } else {
+            eprintln!("🚫 amixer also failed to get volume");
+        } 
+        fallback_result
     }
 }
 fn get_volume_from_pactl() -> Option<String>{
@@ -60,6 +78,7 @@ fn get_volume_from_amixer() -> Option<String>{
 }
 
 fn toggle_mute(fallback: impl FnOnce()) -> String{
+    eprintln!("🔁 Toggling mute");
     let result = Command::new("pactl")
     .args(["set-sink-mute", "@DEFAULT_SINK@", "toggle"])
     .output();
@@ -75,8 +94,10 @@ fn toggle_mute(fallback: impl FnOnce()) -> String{
             if output.status.success() {
                 let text = String::from_utf8_lossy(&output.stdout);
                 if text.contains("yes") {
+                    eprintln!("🔇 Sink is now muted");
                     "MUTED".to_string()
                 } else {
+                    eprintln!("🔈 Sink is unmuted, getting volume...");
                     get_current_volume().unwrap_or_else(|| "NA".to_string())
                 }
             } else {
@@ -92,6 +113,7 @@ fn toggle_mute(fallback: impl FnOnce()) -> String{
 }
 
 fn toggle_mute_amixer_fallback(){
+    eprintln!("⛑️  Fallback: toggling mute with amixer");
     let result = Command::new("pactl")
     .args(["set-sink-mute", "@DEFAULT_SINK@", "toggle"])
     .output();
@@ -100,12 +122,15 @@ fn toggle_mute_amixer_fallback(){
 }
 
 fn fallback_amixer(volume: &str){
-   let result = Command::new("amixer")
-        .args(["set", "Master", volume])
-        .output();
+    eprintln!("⛑️  Fallback: adjusting volume with amixer {}", volume);
+    let result = Command::new("amixer")
+         .args(["set", "Master", volume])
+         .output();
 
-    handle_output("amixer", &result, || {})
+     handle_output("amixer", &result, || {})
 }
+
+
 
 fn handle_output(tool: &str, result: &Result<Output, Error>, fallback: impl FnOnce()){
     match result {

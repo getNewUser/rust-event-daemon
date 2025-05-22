@@ -1,8 +1,6 @@
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::Path;
 use event_daemon::events::EventType;
 use event_daemon::handler::handle_event;
+use event_daemon::fifo_helper::read_lines;
 
 fn main()-> Result<(), Box<dyn std::error::Error>>{
     loop {
@@ -15,10 +13,4 @@ fn main()-> Result<(), Box<dyn std::error::Error>>{
         }
     }
 }
-fn read_lines<P>(file_name: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(file_name)?;
-    Ok(io::BufReader::new(file).lines())
-}
+
