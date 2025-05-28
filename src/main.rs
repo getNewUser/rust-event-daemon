@@ -1,6 +1,11 @@
 use event_daemon::events::EventType;
 use event_daemon::handler::handle_event;
 use event_daemon::fifo_helper::read_lines;
+use event_daemon::state::DaemonState;
+use event_daemon::state::VolumeState;
+use event_daemon::state::ColorState;
+use std::sync::Mutex;
+use std::sync::Arc;
 
 fn main()-> Result<(), Box<dyn std::error::Error>>{
     loop {
