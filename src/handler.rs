@@ -1,22 +1,40 @@
 use std::io::Error;
 use std::process::Command;
 use std::process::Output;
+use std::time::Instant;
 use crate::events::EventType;
 use crate::fifo_helper;
 use crate::fifo_helper::FifoFile;
+use crate::state::DaemonState;
+use crate::state::ColorState;
 
-
-pub fn handle_event(event: EventType) {
+pub fn handle_event(event: EventType, state: &mut DaemonState) {
     eprintln!("🔔 Handling event: {:?}", event);
 
-    let result = match event {
-        EventType::VolumeUp => adjust_volume("+5%", || fallback_amixer("+5%")),
-        EventType::VolumeDown => adjust_volume("-5%", || fallback_amixer("-5%")), 
-        EventType::MuteToggle => toggle_mute(toggle_mute_amixer_fallback),
+    let color: ColorState;
+    let last_event_time: Option<Instant>;
+    state.volume_state.volume = match event {
+        EventType::VolumeUp => {
+            color = ColorState::Increased;
+            last_event_time = Some(Instant::now());
+            Some(adjust_volume("+5%", || fallback_amixer("+5%")))
+        }        ,
+        EventType::VolumeDown => {
+            color = ColorState::Decreased;
+            last_event_time = Some(Instant::now());
+            Some(adjust_volume("-5%", || fallback_amixer("-5%")))
+        }, 
+        EventType::MuteToggle => {
+            color = ColorState::Default;
+            last_event_time = Some(Instant::now());
+            Some(toggle_mute(toggle_mute_amixer_fallback))}
     };
 
-    eprintln!("📤 Final output: {}", result);
-    fifo_helper::write(&result, FifoFile::VolumeStatus);
+    state.volume_state.color = color;
+    state.volume_state.last_event_time = last_event_time;
+    eprintln!("📤 Final output: {:?}", state);
+    let colored_volume = state.volume_state.color.apply_color(&state.volume_state.volume.clone().unwrap());
+    fifo_helper::write(&colored_volume, FifoFile::VolumeStatus);
     eprintln!("✅ Wrote status to FIFO");
 }
 
