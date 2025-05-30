@@ -4,3 +4,8 @@ pub enum EventType {
     VolumeDown,
     MuteToggle,
 }
+
+pub enum DaemonMessage {
+    Event(EventType),
+    ClearColor,
+}

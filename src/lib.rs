@@ -1,4 +1,9 @@
+pub mod amixer_audio;
+pub mod audio_backend_trait;
+pub mod command_helper;
 pub mod events;
-pub mod handler;
+pub mod fallback_backend;
 pub mod fifo_helper;
+pub mod handler;
+pub mod pactl_audio;
 pub mod state;
