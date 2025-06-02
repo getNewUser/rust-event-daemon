@@ -1,4 +1,4 @@
-use crate::audio_backend_trait::AudioError;
+use crate::controller::AudioError;
 use std::{fmt, process::Command};
 
 pub fn run_audio_command(program: AudioProgramType, args: &[&str]) -> Result<String, AudioError> {

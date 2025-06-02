@@ -1,5 +1,5 @@
+use event_daemon::core::events::EventType;
 use std::fs::File;
-use event_daemon::events::EventType;
 use std::io::Write;
 
 pub fn main() -> std::io::Result<()> {

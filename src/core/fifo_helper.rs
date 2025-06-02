@@ -1,21 +1,23 @@
-use std::fs;
-use std::os::unix::fs::FileTypeExt;
-use std::path::Path;
 use nix::sys::stat::Mode;
 use nix::unistd::mkfifo;
+use std::fs;
 use std::fs::File;
-use std::io::{self, BufRead};
 use std::fs::OpenOptions;
 use std::io::Write;
-
+use std::io::{self, BufRead};
+use std::os::unix::fs::FileTypeExt;
+use std::path::Path;
 
 pub fn ensure_fifo_exists(path: &str) {
-    let system_path = Path::new(path); 
+    let system_path = Path::new(path);
     if system_path.exists() {
         match fs::metadata(system_path) {
             Ok(metadata) => {
                 if !metadata.file_type().is_fifo() {
-                    eprintln!("⚠️  File at '{}' exists but is not a FIFO. Replacing it...", path);
+                    eprintln!(
+                        "⚠️  File at '{}' exists but is not a FIFO. Replacing it...",
+                        path
+                    );
                     if let Err(e) = fs::remove_file(system_path) {
                         eprintln!("🚫 Failed to remove non-FIFO file '{}': {}", path, e);
                         return;
@@ -57,20 +59,24 @@ pub fn write(text: &str, fifo: FifoFile) {
             }
         }
         Err(e) => {
-            eprintln!("🚫 Failed to open FIFO for writing '{}': {}", fifo.file_path(), e);
+            eprintln!(
+                "🚫 Failed to open FIFO for writing '{}': {}",
+                fifo.file_path(),
+                e
+            );
         }
     }
 }
 
 #[derive(Debug)]
 pub enum FifoFile {
-   VolumeStatus 
+    VolumeStatus,
 }
 
 impl FifoFile {
     pub fn file_path(&self) -> &'static str {
         match self {
-            Self::VolumeStatus => "/tmp/volume-status.fifo"
+            Self::VolumeStatus => "/tmp/volume-status.fifo",
         }
     }
 }

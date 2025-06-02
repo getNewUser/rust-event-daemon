@@ -1,15 +1,8 @@
-use event_daemon::amixer_audio::AmixerAudio;
-use event_daemon::events::DaemonMessage;
-use event_daemon::events::EventType;
-use event_daemon::fallback_backend::FallbackBackend;
-use event_daemon::fifo_helper;
-use event_daemon::fifo_helper::FifoFile;
-use event_daemon::fifo_helper::read_lines;
-use event_daemon::handler::handle_event;
-use event_daemon::pactl_audio::PactlAudio;
-use event_daemon::state::ColorState;
-use event_daemon::state::DaemonState;
-use event_daemon::state::VolumeState;
+use event_daemon::controller::{AmixerController, FallbackController, PactlController};
+use event_daemon::core::events::{DaemonMessage, EventType};
+use event_daemon::core::fifo_helper::{self, FifoFile, read_lines};
+use event_daemon::core::handler::handle_event;
+use event_daemon::core::state::{ColorState, DaemonState, VolumeState};
 use std::thread;
 use std::time::Duration;
 
@@ -58,9 +51,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let audio_backend = FallbackBackend {
-        primary: PactlAudio,
-        fallback: AmixerAudio,
+    let audio_backend = FallbackController {
+        primary: PactlController,
+        fallback: AmixerController,
     };
 
     for msg in msg_rx {

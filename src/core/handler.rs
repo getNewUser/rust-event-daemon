@@ -1,11 +1,11 @@
-use crate::audio_backend_trait::{AudioBackend, AudioError};
-use crate::events::EventType;
-use crate::fifo_helper;
-use crate::fifo_helper::FifoFile;
-use crate::state::{ColorState, DaemonState};
+use crate::controller::{AudioController, AudioError};
+use crate::core::events::EventType;
+use crate::core::state::{ColorState, DaemonState};
+use crate::core::{fifo_helper, fifo_helper::FifoFile};
+
 use std::time::Instant;
 
-pub fn handle_event(event: EventType, backend: &impl AudioBackend, state: &mut DaemonState) {
+pub fn handle_event(event: EventType, backend: &impl AudioController, state: &mut DaemonState) {
     eprintln!("🔔 Handling event: {:?}", event);
     match event {
         EventType::VolumeUp => {

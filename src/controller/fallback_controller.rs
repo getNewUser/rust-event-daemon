@@ -1,19 +1,15 @@
-use crate::audio_backend_trait::{AudioBackend, AudioError};
-
-pub struct FallbackBackend<B1, B2> {
+use crate::controller::{AudioController, AudioError, audio_controller};
+pub struct FallbackController<B1, B2> {
     pub primary: B1,
     pub fallback: B2,
 }
 
-impl<B1, B2> AudioBackend for FallbackBackend<B1, B2>
+impl<B1, B2> AudioController for FallbackController<B1, B2>
 where
-    B1: AudioBackend,
-    B2: AudioBackend,
+    B1: AudioController,
+    B2: AudioController,
 {
-    fn adjust_volume(
-        &self,
-        volume: &str,
-    ) -> Result<String, crate::audio_backend_trait::AudioError> {
+    fn adjust_volume(&self, volume: &str) -> Result<String, audio_controller::AudioError> {
         self.primary.adjust_volume(volume).or_else(|primary_err| {
             self.fallback
                 .adjust_volume(volume)

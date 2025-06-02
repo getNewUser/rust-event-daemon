@@ -1,13 +1,10 @@
-use crate::audio_backend_trait::AudioBackend;
-use crate::audio_backend_trait::AudioError;
-use crate::command_helper::AudioProgramType;
-use crate::command_helper::run_audio_command;
-
-pub struct PactlAudio;
+use crate::controller::{AudioController, AudioError};
+use crate::util::command_helper::{AudioProgramType, run_audio_command};
+pub struct PactlController;
 
 const PROGRAM: AudioProgramType = AudioProgramType::Pactl;
 
-impl AudioBackend for PactlAudio {
+impl AudioController for PactlController {
     fn adjust_volume(&self, volume: &str) -> Result<String, AudioError> {
         eprintln!("🔧 Adjusting volume by {}", volume);
 

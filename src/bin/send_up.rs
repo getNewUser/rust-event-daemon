@@ -1,4 +1,4 @@
-use event_daemon::events::EventType;
+use event_daemon::core::events::EventType;
 use std::{fs::File, io::Write};
 
 pub fn main() -> std::io::Result<()> {
@@ -8,4 +8,3 @@ pub fn main() -> std::io::Result<()> {
     let event = event.as_bytes();
     file.write_all(event)
 }
-

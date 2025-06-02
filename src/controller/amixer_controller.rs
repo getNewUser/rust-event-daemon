@@ -1,13 +1,11 @@
-use crate::audio_backend_trait::AudioBackend;
-use crate::audio_backend_trait::AudioError;
-use crate::command_helper::AudioProgramType;
-use crate::command_helper::run_audio_command;
+use crate::controller::{AudioController, AudioError};
+use crate::util::command_helper::{AudioProgramType, run_audio_command};
 
-pub struct AmixerAudio;
+pub struct AmixerController;
 
 const PROGRAM: AudioProgramType = AudioProgramType::Amixer;
 
-impl AudioBackend for AmixerAudio {
+impl AudioController for AmixerController {
     fn adjust_volume(&self, volume: &str) -> Result<String, AudioError> {
         run_audio_command(PROGRAM, &["Master", volume])?;
         self.get_current_volume()
