@@ -5,7 +5,7 @@ use strum_macros::Display;
 pub enum ColorState {
     Default,
     Increased,
-    Decreased
+    Decreased,
 }
 
 #[derive(Debug, Clone)]
@@ -17,16 +17,15 @@ pub struct VolumeState {
 
 #[derive(Debug, Clone)]
 pub struct DaemonState {
-    pub volume_state: VolumeState
+    pub volume_state: VolumeState,
 }
-
 
 impl ColorState {
     pub fn apply_color(&self, text: &str) -> String {
         match self {
             ColorState::Default => text.to_string(),
-            ColorState::Increased => format!("%{{F#00ff00}}{}%{{F-}}", text),
-            ColorState::Decreased => format!("%{{F#ff0000}}{}%{{F-}}", text),
+            ColorState::Increased => format!("%{{F#6b9c9a}}{}%{{F-}}", text), // muted teal
+            ColorState::Decreased => format!("%{{F#a54242}}{}%{{F-}}", text), // matches alert
         }
     }
 }
